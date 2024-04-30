@@ -1,19 +1,19 @@
-import React, { Component } from "react";
-import Node from "../components/Node/Node";
-import NavigationBar from "../components/NavigationBar/NavigationBar";
-import { dijkstra, getDijkstraPath } from "../components/Algorithms/Dijkstra";
-import { astar, getAStarPath } from "../components/Algorithms/AStar";
+import React, { Component } from "react"
+import Node from "../components/Node/Node"
+import NavigationBar from "../components/NavigationBar/NavigationBar"
+import { dijkstra, getDijkstraPath } from "../components/Algorithms/Dijkstra"
+import { astar, getAStarPath } from "../components/Algorithms/AStar"
 import {
 	greedyBFS,
 	getGreedyBFSPath,
-} from "../components/Algorithms/GreedyBestFirstSearch";
-import { bfs, getBFSPath } from "../components/Algorithms/BFS";
-import { dfs, getDFSPath } from "../components/Algorithms/DFS";
-import "./PathfindingVisualizer.css";
+} from "../components/Algorithms/GreedyBestFirstSearch"
+import { bfs, getBFSPath } from "../components/Algorithms/BFS"
+import { dfs, getDFSPath } from "../components/Algorithms/DFS"
+import "./PathfindingVisualizer.css"
 
 export default class Main extends Component {
 	constructor(props) {
-		super(props);
+		super(props)
 		this.state = {
 			grid: [],
 			dragStart: false,
@@ -21,109 +21,115 @@ export default class Main extends Component {
 			mousePressed: false,
 			obstacle: "Wall",
 			startX: 14,
-			startY: 15,
+			startY: 10,
 			finishX: 14,
-			finishY: 55,
+			finishY: 56,
 			inProgress: false,
 			afterPath: false,
 			algo: "",
-		};
+		}
 	}
 
 	componentDidMount() {
-		const final = this.getInitialGrid();
-		this.setState({ grid: final });
+		const final = this.getInitialGrid()
+		this.setState({ grid: final })
+		window.addEventListener("resize", () =>
+			this.setState((prevState) => ({
+				...prevState,
+				grid: this.getInitialGrid(),
+			}))
+		)
 	}
 
 	onMouseDown(row, col) {
 		if (this.state.inProgress || this.state.afterPath) {
-			return;
+			return
 		}
-		const { grid } = this.state;
+		const { grid } = this.state
 		if (grid[row][col].isStart) {
 			this.setState({
 				mousePressed: true,
 				dragStart: true,
-			});
-			return;
+			})
+			return
 		}
 		if (grid[row][col].isFinish) {
 			this.setState({
 				mousePressed: true,
 				dragEnd: true,
-			});
-			return;
+			})
+			return
 		}
-		const newGrid = this.updatedGrid(this.state.grid, row, col);
-		this.setState({ grid: newGrid, mousePressed: true });
+		const newGrid = this.updatedGrid(this.state.grid, row, col)
+		this.setState({ grid: newGrid, mousePressed: true })
 	}
 
 	onMouseEnter(row, col) {
-		const { grid } = this.state;
+		const { grid } = this.state
 		if (this.state.inProgress || this.state.afterPath) {
-			return;
+			return
 		}
 		if (!this.state.mousePressed) {
-			return;
+			return
 		}
 		if (this.state.dragStart) {
-			const newGrid = grid;
-			newGrid[row][col].isStart = !grid[row][col].isStart;
-			newGrid[row][col].isWall = false;
-			newGrid[row][col].isWeighted = false;
-			this.setState({ grid: newGrid, startX: row, startY: col });
-			return;
+			const newGrid = grid
+			newGrid[row][col].isStart = !grid[row][col].isStart
+			newGrid[row][col].isWall = false
+			newGrid[row][col].isWeighted = false
+			this.setState({ grid: newGrid, startX: row, startY: col })
+			return
 		}
 		if (this.state.dragEnd) {
-			const newGrid = grid;
-			newGrid[row][col].isWeighted = false;
-			newGrid[row][col].isWall = false;
-			newGrid[row][col].isFinish = !grid[row][col].isFinish;
+			const newGrid = grid
+			newGrid[row][col].isWeighted = false
+			newGrid[row][col].isWall = false
+			newGrid[row][col].isFinish = !grid[row][col].isFinish
 			this.setState({
 				grid: newGrid,
 				finishX: row,
 				finishY: col,
-			});
-			return;
+			})
+			return
 		}
 		if (grid[row][col].isStart || grid[row][col].isFinish) {
-			return;
+			return
 		}
-		const newGrid = this.updatedGrid(this.state.grid, row, col);
-		this.setState({ grid: newGrid });
+		const newGrid = this.updatedGrid(this.state.grid, row, col)
+		this.setState({ grid: newGrid })
 	}
 
 	onMouseOut(row, col) {
 		if (this.state.inProgress || this.state.afterPath) {
-			return;
+			return
 		}
-		const { grid } = this.state;
+		const { grid } = this.state
 		if (!this.state.mousePressed) {
-			return;
+			return
 		}
 		if (this.state.dragStart) {
-			const newGrid = grid;
-			newGrid[row][col].isStart = !grid[row][col].isStart;
-			this.setState({ grid: newGrid, startX: row, startY: col });
-			return;
+			const newGrid = grid
+			newGrid[row][col].isStart = !grid[row][col].isStart
+			this.setState({ grid: newGrid, startX: row, startY: col })
+			return
 		}
 		if (this.state.dragEnd) {
-			const newGrid = grid;
-			newGrid[row][col].isFinish = !grid[row][col].isFinish;
+			const newGrid = grid
+			newGrid[row][col].isFinish = !grid[row][col].isFinish
 			this.setState({
 				grid: newGrid,
 				finishX: row,
 				finishY: col,
-			});
-			return;
+			})
+			return
 		}
 	}
 
 	onMouseUp(row, col) {
 		if (this.state.inProgress || this.state.afterPath) {
-			return;
+			return
 		}
-		this.setState({ dragStart: false, dragEnd: false, mousePressed: false });
+		this.setState({ dragStart: false, dragEnd: false, mousePressed: false })
 	}
 
 	animateNoPath() {
@@ -137,47 +143,47 @@ export default class Main extends Component {
 						!this.state.grid[i][j].isWall &&
 						!this.state.grid[i][j].isWeighted
 					)
-						document.getElementById(`node-${i}-${j}`).className = "node nopath";
-				}, 40 * i + 40 * j);
+						document.getElementById(`node-${i}-${j}`).className = "node nopath"
+				}, 40 * i + 40 * j)
 			}
 			setTimeout(() => {
-				if (i === 29) window.alert("No Path Found :(");
-			}, 4500);
+				if (i === 29) window.alert("No Path Found :(")
+			}, 4500)
 		}
 	}
 
 	animatePathNodes(nodesInOrder) {
 		if (nodesInOrder.length === 0) {
 			setTimeout(() => {
-				this.animateNoPath();
-			}, 2000);
-			this.setState({ inProgress: false, afterPath: true });
+				this.animateNoPath()
+			}, 2000)
+			this.setState({ inProgress: false, afterPath: true })
 
-			return;
+			return
 		}
 		for (let i = 0; i <= nodesInOrder.length; i++) {
 			if (i === nodesInOrder.length) {
 				setTimeout(() => {
-					this.setState({ inProgress: false, afterPath: true });
-				}, 30 * i);
-				return;
+					this.setState({ inProgress: false, afterPath: true })
+				}, 30 * i)
+				return
 			}
 			setTimeout(() => {
-				const node = nodesInOrder[i];
+				const node = nodesInOrder[i]
 				if (!node.isStart && !node.isFinish && !node.isWeighted)
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node inpath";
+						"node inpath"
 				else if (node.isStart) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node startSpecial";
+						"node startSpecial"
 				} else if (node.isFinish) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node finishSpecial";
+						"node finishSpecial"
 				} else {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node weightSpecial";
+						"node weightSpecial"
 				}
-			}, 30 * i);
+			}, 30 * i)
 		}
 	}
 
@@ -185,123 +191,123 @@ export default class Main extends Component {
 		for (let i = 0; i <= visitedNodes.length; i++) {
 			if (i === visitedNodes.length) {
 				setTimeout(() => {
-					this.animatePathNodes(nodesInOrder);
-				}, 10 * i);
-				return;
+					this.animatePathNodes(nodesInOrder)
+				}, 10 * i)
+				return
 			}
 			setTimeout(() => {
-				const node = visitedNodes[i];
+				const node = visitedNodes[i]
 				if (!node.isStart && !node.isFinish && !node.isWeighted)
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node visited";
+						"node visited"
 				else if (node.isStart) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node visitedStart";
+						"node visitedStart"
 				} else if (node.isFinish) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node visitedFinish";
+						"node visitedFinish"
 				} else {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node visitedWeight";
+						"node visitedWeight"
 				}
-			}, 10 * i);
+			}, 10 * i)
 		}
 	}
 
 	visualizeDijkstra(grid, startNode, finishNode) {
-		const visitedNodes = dijkstra(grid, startNode, finishNode);
-		const nodesInOrder = getDijkstraPath(finishNode);
-		this.animateVisitedNodes(visitedNodes, nodesInOrder);
+		const visitedNodes = dijkstra(grid, startNode, finishNode)
+		const nodesInOrder = getDijkstraPath(finishNode)
+		this.animateVisitedNodes(visitedNodes, nodesInOrder)
 	}
 
 	visualizeAStar(grid, startNode, finishNode) {
-		const visitedNodes = astar(grid, startNode, finishNode);
-		const nodesInOrder = getAStarPath(finishNode);
-		this.animateVisitedNodes(visitedNodes, nodesInOrder);
+		const visitedNodes = astar(grid, startNode, finishNode)
+		const nodesInOrder = getAStarPath(finishNode)
+		this.animateVisitedNodes(visitedNodes, nodesInOrder)
 	}
 
 	visualizeBFS(grid, startNode, finishNode) {
-		const visitedNodes = bfs(grid, startNode, finishNode);
-		const nodesInOrder = getBFSPath(finishNode);
-		this.animateVisitedNodes(visitedNodes, nodesInOrder);
+		const visitedNodes = bfs(grid, startNode, finishNode)
+		const nodesInOrder = getBFSPath(finishNode)
+		this.animateVisitedNodes(visitedNodes, nodesInOrder)
 	}
 
 	visualizeDFS(grid, startNode, finishNode) {
-		const visitedNodes = dfs(grid, startNode, finishNode);
-		const nodesInOrder = getDFSPath(finishNode);
-		this.animateVisitedNodes(visitedNodes, nodesInOrder);
+		const visitedNodes = dfs(grid, startNode, finishNode)
+		const nodesInOrder = getDFSPath(finishNode)
+		this.animateVisitedNodes(visitedNodes, nodesInOrder)
 	}
 
 	visualizeGreedy(grid, startNode, finishNode) {
-		const visitedNodes = greedyBFS(grid, startNode, finishNode);
-		const nodesInOrder = getGreedyBFSPath(finishNode);
-		this.animateVisitedNodes(visitedNodes, nodesInOrder);
+		const visitedNodes = greedyBFS(grid, startNode, finishNode)
+		const nodesInOrder = getGreedyBFSPath(finishNode)
+		this.animateVisitedNodes(visitedNodes, nodesInOrder)
 	}
 
 	visualize = (algorithm) => {
 		if (this.state.inProgress) {
-			return;
+			return
 		}
-		var a = document.getElementById("info");
+		var a = document.getElementById("info")
 		if (algorithm === "Algorithms") {
-			a.innerHTML = "Please choose an algorithm to visualize";
-			return;
+			a.innerHTML = "Please choose an algorithm to visualize"
+			return
 		}
-		this.setState({ inProgress: true });
+		this.setState({ inProgress: true })
 		if (this.state.afterPath) {
-			this.clearPath();
+			this.clearPath()
 		}
-		var { grid, startX, startY, finishX, finishY } = this.state;
+		var { grid, startX, startY, finishX, finishY } = this.state
 
-		var startNode = grid[startX][startY];
-		var finishNode = grid[finishX][finishY];
+		var startNode = grid[startX][startY]
+		var finishNode = grid[finishX][finishY]
 		if (algorithm === "Dijkstra") {
-			this.visualizeDijkstra(grid, startNode, finishNode);
+			this.visualizeDijkstra(grid, startNode, finishNode)
 		} else if (algorithm === "A*") {
-			this.visualizeAStar(grid, startNode, finishNode);
+			this.visualizeAStar(grid, startNode, finishNode)
 		} else if (algorithm === "Greedy") {
-			this.visualizeGreedy(grid, startNode, finishNode);
+			this.visualizeGreedy(grid, startNode, finishNode)
 		} else if (algorithm === "BFS") {
-			this.visualizeBFS(grid, startNode, finishNode);
+			this.visualizeBFS(grid, startNode, finishNode)
 		} else if (algorithm === "DFS") {
-			this.visualizeDFS(grid, startNode, finishNode);
+			this.visualizeDFS(grid, startNode, finishNode)
 		}
-	};
+	}
 
 	chooseAlgorithm = (algorithm) => {
-		var a = document.getElementById("info");
+		var a = document.getElementById("info")
 		if (algorithm === "Dijkstra") {
-			algorithm = "W";
+			algorithm = "W"
 			a.innerHTML =
-				"Dijkstra's Algorithm is <i>weighted</i> and <i>guarantees</i> the shortest path!";
+				"Dijkstra's Algorithm is <i>weighted</i> and <i>guarantees</i> the shortest path!"
 		} else if (algorithm === "A* Search") {
-			algorithm = "W";
+			algorithm = "W"
 			a.innerHTML =
-				"A* Search is <i>weighted</i> and <i>guarantees</i> the shortest path!";
+				"A* Search is <i>weighted</i> and <i>guarantees</i> the shortest path!"
 		} else if (algorithm === "Greedy Best First Search") {
-			algorithm = "W";
+			algorithm = "W"
 			a.innerHTML =
-				"Greedy Best First Search is <i>weighted</i> and <i>does not guarantee</i> the shortest path!";
+				"Greedy Best First Search is <i>weighted</i> and <i>does not guarantee</i> the shortest path!"
 		} else if (algorithm === "Breadth First Search (BFS)") {
-			algorithm = "U";
-			this.clearWeightedNodes();
+			algorithm = "U"
+			this.clearWeightedNodes()
 			a.innerHTML =
-				"Breath First Search is <i>unweighted</i> and <i>guarantees</i> the shortest path!";
+				"Breath First Search is <i>unweighted</i> and <i>guarantees</i> the shortest path!"
 		} else if (algorithm === "Depth First Search (DFS)") {
-			algorithm = "U";
-			this.clearWeightedNodes();
+			algorithm = "U"
+			this.clearWeightedNodes()
 			a.innerHTML =
-				"Depth First Search is <i>unweighted</i> and <i>does not guarantee</i> the shortest path!";
+				"Depth First Search is <i>unweighted</i> and <i>does not guarantee</i> the shortest path!"
 		}
-		this.setState({ algo: algorithm });
-	};
+		this.setState({ algo: algorithm })
+	}
 
 	chooseObstacle = (val) => {
-		this.setState({ obstacle: val });
-	};
+		this.setState({ obstacle: val })
+	}
 
 	render() {
-		const { grid } = this.state;
+		const { grid } = this.state
 		return (
 			<>
 				<NavigationBar
@@ -311,9 +317,9 @@ export default class Main extends Component {
 					onChoosingAlgorithm={this.chooseAlgorithm}
 					onChoosingObstacle={this.chooseObstacle}
 				/>
-				<div className="grid" onKeyDown={this.onKeyDown}>
+				<div className="main-content" onKeyDown={this.onKeyDown}>
 					<h3 id="info">Please choose an algorithm to visualize</h3>
-					<table>
+					<table className="grid">
 						<tbody>
 							{grid.map((row, index) => {
 								return (
@@ -335,24 +341,52 @@ export default class Main extends Component {
 													onMouseUp={() => this.onMouseUp()}
 													onMouseOut={(row, col) => this.onMouseOut(row, col)}
 												></Node>
-											);
+											)
 										})}
 									</tr>
-								);
+								)
 							})}
 						</tbody>
 					</table>
 				</div>
 			</>
-		);
+		)
+	}
+
+	getColumnNumber() {
+		const innerWidth = window.innerWidth
+		if (innerWidth >= 1710) return 65
+		if (innerWidth >= 1600) return 60
+		if (innerWidth >= 1450) return 55
+		if (innerWidth >= 1320) return 50
+		if (innerWidth >= 1190) return 45
+		if (innerWidth >= 1060) return 40
+		if (innerWidth >= 1000) return 35
+		return 20
 	}
 
 	getInitialGrid() {
-		var final = [];
-		const { startX, startY, finishX, finishY } = this.state;
-		for (let i = 0; i < 30; i++) {
-			var cur = [];
-			for (let j = 0; j < 70; j++) {
+		var final = []
+		/**
+		 * 1000 - 1060 : 35
+		 * 1060 - 1190 : 40
+		 * 1190 - 1320: 45
+		 * 1320 - 1450: 50
+		 * 1450 - 1600: 55
+		 * 1600 - 1710: 60
+		 * 1710+ = 65
+		 */
+		const { startX, startY, finishX } = this.state
+		const noOfColumns = this.getColumnNumber()
+		const finishY = noOfColumns === 20 ? 19 : noOfColumns - 9
+		this.setState((prevState) => ({
+			...prevState,
+			finishY,
+		}))
+
+		for (let i = 0; i < 28; i++) {
+			var cur = []
+			for (let j = 0; j < noOfColumns; j++) {
 				const node = {
 					row: i,
 					col: j,
@@ -366,44 +400,44 @@ export default class Main extends Component {
 					f: Infinity,
 					g: 0,
 					h: Infinity,
-				};
-				cur.push(node);
+				}
+				cur.push(node)
 			}
-			final.push(cur);
+			final.push(cur)
 		}
-		return final;
+		return final
 	}
 
 	clearWeightedNodes() {
-		const { grid } = this.state;
-		var final = grid;
+		const { grid } = this.state
+		var final = grid
 		for (let row of final) {
 			for (let i = 0; i < row.length; i++) {
-				const node = row[i];
+				const node = row[i]
 				if (node.isWeighted) {
 					const newNode = {
 						...node,
 						isWeighted: false,
-					};
+					}
 					if (!newNode.isStart && !newNode.isFinish)
 						document.getElementById(`node-${node.row}-${node.col}`).className =
-							"node";
-					row[i] = newNode;
+							"node"
+					row[i] = newNode
 				}
 			}
 		}
-		this.setState({ grid: final });
+		this.setState({ grid: final })
 	}
 
 	clearPath = () => {
 		if (this.state.inProgress) {
-			return;
+			return
 		}
-		const { grid } = this.state;
-		var final = grid;
+		const { grid } = this.state
+		var final = grid
 		for (let row of final) {
 			for (let i = 0; i < row.length; i++) {
-				const node = row[i];
+				const node = row[i]
 				const newNode = {
 					...node,
 					distance: Infinity,
@@ -412,7 +446,7 @@ export default class Main extends Component {
 					f: Infinity,
 					g: 0,
 					h: Infinity,
-				};
+				}
 				if (
 					!newNode.isStart &&
 					!newNode.isFinish &&
@@ -420,35 +454,35 @@ export default class Main extends Component {
 					!newNode.isWeighted
 				)
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node";
+						"node"
 				else if (newNode.isStart) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node start";
+						"node start"
 				} else if (newNode.isFinish) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node finish";
+						"node finish"
 				} else if (newNode.isWall) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node wall";
+						"node wall"
 				} else {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node weight";
+						"node weight"
 				}
-				row[i] = newNode;
+				row[i] = newNode
 			}
 		}
-		this.setState({ grid: final, afterPath: false });
-	};
+		this.setState({ grid: final, afterPath: false })
+	}
 
 	clearGrid = () => {
 		if (this.state.inProgress) {
-			return;
+			return
 		}
-		const { grid } = this.state;
-		var final = grid;
+		const { grid } = this.state
+		var final = grid
 		for (let row of final) {
 			for (let i = 0; i < row.length; i++) {
-				const node = row[i];
+				const node = row[i]
 				const newNode = {
 					...node,
 					distance: Infinity,
@@ -459,49 +493,49 @@ export default class Main extends Component {
 					f: Infinity,
 					g: 0,
 					h: Infinity,
-				};
+				}
 				if (!newNode.isStart && !newNode.isFinish)
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node";
+						"node"
 				else if (newNode.isStart) {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node start";
+						"node start"
 				} else {
 					document.getElementById(`node-${node.row}-${node.col}`).className =
-						"node finish";
+						"node finish"
 				}
-				row[i] = newNode;
+				row[i] = newNode
 			}
 		}
-		this.setState({ grid: final, afterPath: false });
-	};
+		this.setState({ grid: final, afterPath: false })
+	}
 
 	updatedGrid(grid, row, col) {
-		const newGrid = grid.slice();
-		const node = grid[row][col];
+		const newGrid = grid.slice()
+		const node = grid[row][col]
 		if (this.state.obstacle === "Wall") {
 			if (node.isWeighted) {
-				node.isWeighted = false;
+				node.isWeighted = false
 			}
 			const newNode = {
 				...node,
 				isWall: !node.isWall,
-			};
-			newGrid[row][col] = newNode;
-			return newGrid;
+			}
+			newGrid[row][col] = newNode
+			return newGrid
 		} else {
 			if (this.state.algo === "U") {
-				return grid;
+				return grid
 			}
 			if (node.isWall) {
-				node.isWall = false;
+				node.isWall = false
 			}
 			const newNode = {
 				...node,
 				isWeighted: !node.isWeighted,
-			};
-			newGrid[row][col] = newNode;
-			return newGrid;
+			}
+			newGrid[row][col] = newNode
+			return newGrid
 		}
 	}
 }
