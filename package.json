@@ -2,7 +2,7 @@
 	"homepage": "http://Deep512.github.io/Pathfinding-Visualizer",
 	"name": "pathfinding-visualizer",
 	"version": "0.1.0",
-	"private": true,
+	"private": false,
 	"dependencies": {
 		"react": "^16.14.0",
 		"react-alert": "^7.0.3",
