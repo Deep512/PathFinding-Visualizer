@@ -1,6 +1,6 @@
 {
 	"homepage": "http://Deep512.github.io/Pathfinding-Visualizer",
-	"name": "pathfinding-visualizer",
+	"name": "Pathfinding-Visualizer",
 	"version": "0.1.0",
 	"private": false,
 	"dependencies": {
